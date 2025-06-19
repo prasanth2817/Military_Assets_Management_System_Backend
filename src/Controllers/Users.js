@@ -31,8 +31,6 @@ const Login = async (req, res) => {
 
 const createUser = async (req, res) => {
   try {
-    console.log(req.body);
-    
     const { userName, password, role, base } = req.body;
     const existingUser = await UserModel.findOne({
       userName: userName.toLowerCase(),
