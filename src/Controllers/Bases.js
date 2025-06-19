@@ -12,6 +12,7 @@ const createBase = async (req, res) => {
       region,
       description,
       commander: null,
+      logisticsOfficer: null,
     });
 
     res.status(201).json({ message: "Base created successfully", base });
@@ -45,6 +46,37 @@ const assignCommanderToBase = async (req, res) => {
     res.status(200).json({ message: "Commander assigned to base", base });
   } catch (error) {
     console.error("Error assigning commander:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+const assignLogisticsOfficer = async (req, res) => {
+  try {
+    const { baseId } = req.params;
+    const { officerId } = req.body;
+
+    const base = await BaseModel.findById(baseId);
+    const officer = await UserModel.findById(officerId);
+
+    if (!base || !officer) {
+      return res.status(404).json({ message: "Base or officer not found" });
+    }
+
+    if (officer.role !== "LogisticsOfficer") {
+      return res
+        .status(400)
+        .json({ message: "User is not a Logistics Officer" });
+    }
+
+    // Add officer to base
+    base.logisticsOfficer = officer._id;
+    await base.save();
+
+    res.status(200).json({ message: "Officer assigned successfully", base });
+  } catch (error) {
+    console.error("Error assigning officer:", error);
     res
       .status(500)
       .json({ message: "Internal server error", error: error.message });
@@ -86,7 +118,7 @@ const deleteBase = async (req, res) => {
     //  unassign base from commander
     if (base.commander) {
       await UserModel.findByIdAndUpdate(base.commander, {
-        $unset: { base: "" },
+        $unset: { base: null },
       });
     }
 
@@ -103,6 +135,7 @@ const deleteBase = async (req, res) => {
 export default {
   createBase,
   assignCommanderToBase,
+  assignLogisticsOfficer,
   editBase,
   deleteBase,
 };

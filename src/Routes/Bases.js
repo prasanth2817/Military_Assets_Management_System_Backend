@@ -17,6 +17,12 @@ router.put(
   BaseController.assignCommanderToBase
 );
 router.put(
+  "/assign-officer/:baseId",
+  Auth.validate,
+  Auth.verifyRole(["Admin"]),
+  BaseController.assignLogisticsOfficer
+);
+router.put(
   "/edit/:baseId",
   Auth.validate,
   Auth.verifyRole(["Admin"]),
